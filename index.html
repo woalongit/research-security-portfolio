@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Security Review System</title>
+<meta name="description" content="Portfolio case study: an AI-assisted research security review system for a university — React 19, TypeScript, MUI, OIDC.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fa; --surface: #ffffff; --surface-2: #f0f3f8; --text: #121826; --muted: #5b6475;
+    --border: #e3e7ee; --accent: #1f6feb; --accent-ink: #ffffff; --accent-soft: #e6effd;
+    --ok: #1a7f37; --warn: #c2410c; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1117; --surface: #151b23; --surface-2: #1b2330; --text: #e6edf3; --muted: #9aa5b4;
+      --border: #2a3441; --accent: #4c8dff; --accent-ink: #0d1117; --accent-soft: #16233a;
+      --ok: #3fb950; --warn: #f0883e; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117; --surface: #151b23; --surface-2: #1b2330; --text: #e6edf3; --muted: #9aa5b4;
+    --border: #2a3441; --accent: #4c8dff; --accent-ink: #0d1117; --accent-soft: #16233a;
+    --ok: #3fb950; --warn: #f0883e; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 16px; }
+  .brand { font-weight: 600; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .navlinks { display: none; gap: 24px; font-size: 14px; }
+  .navlinks a { color: var(--muted); } .navlinks a:hover { color: var(--text); }
+  @media (min-width: 860px) { .navlinks { display: flex; } }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Hero */
+  header.hero { padding: 64px 0 40px; }
+  .eyebrow { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 500; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; }
+  h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.1; letter-spacing: -0.02em; margin: 16px 0 16px; max-width: 18ch; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 40px; }
+  @media (min-width: 720px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+  .fact { background: var(--surface); padding: 16px 20px; }
+  .fact b { display: block; font-size: 13px; font-weight: 500; color: var(--muted); }
+  .fact span { font-weight: 600; }
+  .hero-shot { margin-top: 40px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); cursor: zoom-in; background: var(--surface); }
+  .hero-shot img { display: block; width: 100%; height: auto; }
+
+  /* Sections */
+  section { padding: 56px 0; border-top: 1px solid var(--border); }
+  h2 { font-size: 28px; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 32px; max-width: 70ch; }
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .grid.c2 { grid-template-columns: repeat(2, 1fr); } .grid.c3 { grid-template-columns: repeat(3, 1fr); } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
+  .card h3 { font-size: 16px; margin: 0 0 6px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .card ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+  .card li + li { margin-top: 4px; }
+  .num { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--accent); font-weight: 500; }
+
+  /* Stack */
+  .stack { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .stack { grid-template-columns: 180px 1fr; align-items: baseline; } }
+  .stack dt { font-weight: 600; font-size: 14px; color: var(--muted); }
+  .stack dd { margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 13px; padding: 3px 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+
+  /* Architecture */
+  .arch { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; overflow-x: auto; }
+  .arch svg { display: block; width: 100%; min-width: 640px; height: auto; }
+  .arch .box { fill: var(--surface-2); stroke: var(--border); }
+  .arch .box.hl { fill: var(--accent-soft); stroke: var(--accent); }
+  .arch text { fill: var(--text); font: 600 13px Inter, sans-serif; }
+  .arch text.s { fill: var(--muted); font-weight: 400; font-size: 11.5px; }
+  .arch .ln { stroke: var(--muted); stroke-width: 1.4; fill: none; marker-end: url(#arr); }
+  .arch .dash { stroke-dasharray: 4 4; }
+
+  /* Gallery */
+  .flow-title { font-size: 15px; font-weight: 600; margin: 32px 0 12px; display: flex; align-items: center; gap: 10px; }
+  .flow-title:first-of-type { margin-top: 0; }
+  .flow-title .tag { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .gallery { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 980px) { .gallery { grid-template-columns: repeat(3, 1fr); } }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: zoom-in; transition: transform .15s ease, box-shadow .15s ease; }
+  figure:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  figure:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  figure .thumb { aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  figure img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  figcaption { padding: 12px 16px 14px; }
+  figcaption b { display: block; font-size: 14px; }
+  figcaption span { font-size: 13px; color: var(--muted); }
+
+  /* Lightbox */
+  .lb { position: fixed; inset: 0; z-index: 50; background: rgba(5,8,12,.86); display: none; flex-direction: column; }
+  .lb.open { display: flex; }
+  .lb-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; color: #e6edf3; font-size: 14px; }
+  .lb-bar .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-bar .ctrls { display: flex; gap: 8px; flex-shrink: 0; }
+  .lb-bar button { background: rgba(255,255,255,.1); color: #fff; border: 0; border-radius: 8px; height: 36px; min-width: 36px; padding: 0 10px; cursor: pointer; font: inherit; }
+  .lb-bar button:hover { background: rgba(255,255,255,.2); }
+  .lb-body { flex: 1; overflow: auto; padding: 0 16px 24px; }
+  .lb-body img { display: block; max-width: min(1400px, 100%); margin: 0 auto; border-radius: 8px; }
+
+  .note { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--warn); border-radius: 8px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
+  .note b { color: var(--text); }
+  footer { padding: 40px 0 56px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">Research Security Review System</div>
+    <div class="navlinks">
+      <a href="#overview">Overview</a><a href="#features">Features</a><a href="#screens">Screens</a><a href="#stack">Tech</a><a href="#engineering">Engineering</a>
+    </div>
+    <a class="btn primary" href="demo/" target="_blank" rel="noopener">Live demo
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h7v7M13 3 4 12"/></svg></a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Case study · University client · 2025</span>
+    <h1>AI-assisted research security review</h1>
+    <p class="lede">A web system that helps a university's research administration office screen incoming researchers and international collaborations. Staff upload a résumé or research plan; AI extracts and translates the content, and the system checks it against export-control and screening lists before flagging risks for human review.</p>
+    <div class="cta">
+      <a class="btn primary" href="demo/" target="_blank" rel="noopener">Open live demo
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h7v7M13 3 4 12"/></svg></a>
+      <a class="btn" href="#screens">Browse all screens</a>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>My role</b><span>Frontend developer</span></div>
+      <div class="fact"><b>Team</b><span>6 frontend devs · top committer</span></div>
+      <div class="fact"><b>Timeline</b><span>Nov – Dec 2025</span></div>
+      <div class="fact"><b>Stack</b><span>React 19 · TypeScript · MUI</span></div>
+    </div>
+    <div class="hero-shot" data-idx="7" role="button" tabindex="0" aria-label="Enlarge risk result screen">
+      <img src="screens/08-risk-result.jpg" alt="Risk assessment result screen listing flagged items and their screening sources" loading="eager">
+    </div>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <h2>Overview</h2>
+    <p class="sub">Research security reviews were done by hand: staff read CVs in many languages, re-typed details, and searched screening lists one by one. The system turns that into a guided, auditable flow.</p>
+    <div class="grid c3">
+      <div class="card"><div class="num">01 · Problem</div><h3>Slow, manual screening</h3><p>Multilingual documents, data scattered across a workflow tool, and repetitive look-ups against export-control lists.</p></div>
+      <div class="card"><div class="num">02 · Solution</div><h3>Extract → edit → assess</h3><p>AI reads uploaded files into structured, bilingual fields. Staff correct them, then run one risk check across all sources.</p></div>
+      <div class="card"><div class="num">03 · Outcome</div><h3>Human-in-the-loop decisions</h3><p>High-risk matches are highlighted with their source list, so reviewers can focus on the cases that need attention.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Key features</h2>
+    <p class="sub">Two main modules, behind single sign-on.</p>
+    <div class="grid c2">
+      <div class="card"><h3>Document upload &amp; AI extraction</h3><ul><li>PDF, Word, Excel and image uploads (≤ 4 MB) with validation</li><li>Résumé and research-plan parsing into structured fields</li><li>Side-by-side Japanese / original-language editing</li></ul></div>
+      <div class="card"><h3>Workflow integration</h3><ul><li>Searchable, grouped picker of existing workflow applications (BP / P / M / PM)</li><li>One click to pull application data into the review form</li><li>Schema-driven form fields per workflow type</li></ul></div>
+      <div class="card"><h3>Risk assessment</h3><ul><li>Cross-checks résumé, plan and workflow data in one request</li><li>Summary with counts of risky and high-risk items</li><li>Expandable result table showing matched entity and source list</li></ul></div>
+      <div class="card"><h3>Bulk CSV import</h3><ul><li>Four upload groups, one per workflow type, with multi-file support</li><li>Per-file status (uploading / success / error)</li><li>Server response normalisation for consistent feedback</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <h2>All screens</h2>
+    <p class="sub">Captured from the live demo, in the order a reviewer uses them. Click any screen to view it full size; use ← → to step through.</p>
+
+    <div class="flow-title">1 · Application input <span class="tag">/risk-assessment</span></div>
+    <div class="gallery" id="g1"></div>
+
+    <div class="flow-title">2 · Risk assessment <span class="tag">/risk-assessment (result)</span></div>
+    <div class="gallery" id="g2"></div>
+
+    <div class="flow-title">3 · Workflow CSV import <span class="tag">/upload-csv</span></div>
+    <div class="gallery" id="g3"></div>
+
+    <div class="flow-title">4 · Authentication <span class="tag">/login</span></div>
+    <div class="gallery" id="g4"></div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap">
+    <h2>Tech stack</h2>
+    <p class="sub">A feature-based React SPA, containerised and shipped through CI.</p>
+    <dl class="stack">
+      <dt>Core</dt><dd><span class="chip">React 19</span><span class="chip">TypeScript</span><span class="chip">Vite 7</span><span class="chip">React Router 7</span></dd>
+      <dt>UI</dt><dd><span class="chip">Material UI 7</span><span class="chip">Emotion</span><span class="chip">SCSS Modules</span></dd>
+      <dt>State &amp; data</dt><dd><span class="chip">Zustand</span><span class="chip">TanStack Query</span><span class="chip">Axios</span></dd>
+      <dt>Forms</dt><dd><span class="chip">React Hook Form</span><span class="chip">Yup</span></dd>
+      <dt>Auth</dt><dd><span class="chip">OIDC (Keycloak)</span><span class="chip">oidc-client-ts</span><span class="chip">JWT</span></dd>
+      <dt>i18n</dt><dd><span class="chip">i18next</span><span class="chip">Japanese / English</span></dd>
+      <dt>Quality</dt><dd><span class="chip">Vitest</span><span class="chip">Testing Library</span><span class="chip">MSW</span><span class="chip">ESLint</span><span class="chip">Prettier</span></dd>
+      <dt>Delivery</dt><dd><span class="chip">Docker</span><span class="chip">Nginx</span><span class="chip">Jenkins</span></dd>
+    </dl>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <h2>Architecture</h2>
+    <p class="sub">The browser app talks to one backend API, which fronts the AI extraction service, the workflow system and the screening lists. Identity comes from Keycloak over OIDC.</p>
+    <div class="arch">
+      <svg viewBox="0 0 900 300" role="img" aria-label="Architecture: browser SPA connects to Keycloak for login and to a backend API, which connects to an AI extraction service, a workflow system and screening lists">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor" style="color: var(--muted)"/></marker></defs>
+        <rect class="box" x="20" y="110" width="150" height="80" rx="10"/>
+        <text x="95" y="145" text-anchor="middle">Reviewer</text><text class="s" x="95" y="165" text-anchor="middle">browser</text>
+        <rect class="box hl" x="230" y="90" width="220" height="120" rx="10"/>
+        <text x="340" y="125" text-anchor="middle">React SPA</text>
+        <text class="s" x="340" y="148" text-anchor="middle">features: risk-assessment, upload-csv</text>
+        <text class="s" x="340" y="166" text-anchor="middle">Zustand · React Query · Axios client</text>
+        <text class="s" x="340" y="184" text-anchor="middle">token refresh queue · retry</text>
+        <rect class="box" x="250" y="10" width="180" height="50" rx="10"/>
+        <text x="340" y="40" text-anchor="middle">Keycloak (OIDC)</text>
+        <rect class="box" x="510" y="110" width="150" height="80" rx="10"/>
+        <text x="585" y="145" text-anchor="middle">Backend API</text><text class="s" x="585" y="165" text-anchor="middle">REST</text>
+        <rect class="box" x="720" y="20" width="160" height="60" rx="10"/>
+        <text x="800" y="47" text-anchor="middle">AI extraction</text><text class="s" x="800" y="65" text-anchor="middle">résumé · research plan</text>
+        <rect class="box" x="720" y="120" width="160" height="60" rx="10"/>
+        <text x="800" y="147" text-anchor="middle">Workflow system</text><text class="s" x="800" y="165" text-anchor="middle">applications · CSV</text>
+        <rect class="box" x="720" y="220" width="160" height="60" rx="10"/>
+        <text x="800" y="247" text-anchor="middle">Screening lists</text><text class="s" x="800" y="265" text-anchor="middle">export control</text>
+        <path class="ln" d="M170 150H226"/>
+        <path class="ln dash" d="M340 90V64"/>
+        <path class="ln" d="M450 150H506"/>
+        <path class="ln" d="M660 140 C690 140 690 50 716 50"/>
+        <path class="ln" d="M660 150H716"/>
+        <path class="ln" d="M660 160 C690 160 690 250 716 250"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section id="engineering">
+  <div class="wrap">
+    <h2>Engineering highlights</h2>
+    <p class="sub">Details that kept a document-heavy, long-running AI flow reliable.</p>
+    <div class="grid c3">
+      <div class="card"><h3>Resilient API client</h3><p>Axios instance with configurable retry and delay, a queue that replays requests after a token refresh, and long timeouts for AI calls with abort support.</p></div>
+      <div class="card"><h3>Mock-first development</h3><p>MSW handlers mirror every endpoint, so the UI can be built and demoed without the backend — this live demo runs entirely on them.</p></div>
+      <div class="card"><h3>Schema-driven forms</h3><p>Workflow-type schemas generate fields and required-field validation, and a flattening layer maps bilingual form state to the API request.</p></div>
+      <div class="card"><h3>SSO with Keycloak</h3><p>OIDC login, callback handling, session restore on load and background token-expiry checks, behind protected routes.</p></div>
+      <div class="card"><h3>Performance</h3><p>Vendor code split into stable chunks (React, UI, forms, auth, i18n) for better caching across releases.</p></div>
+      <div class="card"><h3>Delivery</h3><p>Multi-stage Docker image served by Nginx, built and deployed through Jenkins pipelines for staging and production.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="note"><span>ⓘ</span><div><b>About this demo.</b> The client's name, branding and infrastructure have been removed. The demo runs fully in the browser on mock data (no real backend, AI or personal data), and logs in automatically as a sample user. Any file you upload is not sent anywhere.</div></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Research Security Review System — portfolio case study</span>
+    <a class="btn primary" href="demo/" target="_blank" rel="noopener">Open live demo</a>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Screenshot viewer">
+  <div class="lb-bar">
+    <span class="t" id="lbt"></span>
+    <div class="ctrls">
+      <button id="lbp" aria-label="Previous">←</button>
+      <button id="lbn" aria-label="Next">→</button>
+      <button id="lbc" aria-label="Close">✕</button>
+    </div>
+  </div>
+  <div class="lb-body" id="lbb"><img id="lbi" alt=""></div>
+</div>
+
+<script>
+  const SCREENS = [
+    ['g1', '01-application-empty', 'Application input', 'Three data sources: résumé, research plan, workflow.'],
+    ['g1', '02-ai-extracting', 'AI extraction in progress', 'Upload validated, document sent for parsing.'],
+    ['g1', '03-resume-extracted', 'Résumé extracted', 'Bilingual fields: Japanese translation beside the original.'],
+    ['g1', '04-research-plan', 'Research plan extracted', 'Researchers, theme, background, goals and plan.'],
+    ['g1', '05-workflow-dropdown', 'Workflow picker', 'Applications grouped by type (BP / P / M / PM).'],
+    ['g1', '06-workflow-detail', 'Workflow data loaded', 'Schema-driven fields for the selected workflow type.'],
+    ['g2', '07-risk-assessing', 'Assessing risk', 'All three sources cross-checked in a single request.'],
+    ['g2', '08-risk-result', 'Risk result', 'Summary, high-risk flags and the matching screening list.'],
+    ['g3', '09-csv-import', 'CSV import', 'One upload group per workflow type.'],
+    ['g3', '10-csv-files-selected', 'Files selected', 'Multi-file input with size and remove controls.'],
+    ['g3', '11-csv-importing', 'Importing', 'Per-file upload progress.'],
+    ['g3', '12-csv-import-result', 'Import complete', 'Per-file success status.'],
+    ['g4', '13-login', 'Login', 'Mock login screen (production uses Keycloak SSO).'],
+  ];
+  SCREENS.forEach(([g, file, title, desc], i) => {
+    const f = document.createElement('figure');
+    f.tabIndex = 0; f.dataset.idx = i; f.setAttribute('role', 'button'); f.setAttribute('aria-label', 'Enlarge: ' + title);
+    f.innerHTML = `<div class="thumb"><img src="screens/${file}.jpg" alt="${title}" loading="lazy"></div><figcaption><b>${String(i + 1).padStart(2, '0')} · ${title}</b><span>${desc}</span></figcaption>`;
+    document.getElementById(g).appendChild(f);
+  });
+
+  const lb = document.getElementById('lb'), lbi = document.getElementById('lbi'), lbt = document.getElementById('lbt'), lbb = document.getElementById('lbb');
+  let cur = 0;
+  function show(i) {
+    cur = (i + SCREENS.length) % SCREENS.length;
+    const [, file, title, desc] = SCREENS[cur];
+    lbi.src = `screens/${file}.jpg`; lbi.alt = title;
+    lbt.textContent = `${cur + 1} / ${SCREENS.length} · ${title} — ${desc}`;
+    lb.classList.add('open'); lbb.scrollTop = 0; document.body.style.overflow = 'hidden';
+  }
+  function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-idx]');
+    if (t && !lb.contains(t)) show(+t.dataset.idx);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!lb.classList.contains('open')) {
+      const t = e.target.closest && e.target.closest('[data-idx]');
+      if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); show(+t.dataset.idx); }
+      return;
+    }
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+  document.getElementById('lbc').onclick = close;
+  document.getElementById('lbn').onclick = () => show(cur + 1);
+  document.getElementById('lbp').onclick = () => show(cur - 1);
+  lbb.addEventListener('click', (e) => { if (e.target === lbb) close(); });
+</script>
+</body>
+</html>

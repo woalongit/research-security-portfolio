@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>Redirecting…</title>
+<script>
+  var base = '/research-security-portfolio/', l = window.location;
+  if (l.pathname.indexOf(base + 'demo/') === 0) {
+    l.replace(base + 'demo/?p=' + encodeURIComponent(l.pathname.slice((base + 'demo').length)) + l.hash);
+  } else { l.replace(base); }
+</script>
